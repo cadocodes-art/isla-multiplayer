@@ -1,0 +1,16 @@
+// Development-only scenarios; not included in the standalone deliverable.
+const networkEvidence={remoteNitro:false,remoteAirborne:false,remoteWater:false,remoteMotion:false};
+setInterval(()=>{if(!window.Isla?.net)return;for(const r of Isla.net.remotes.values()){networkEvidence.remoteNitro ||= !!r.target.nitro;networkEvidence.remoteAirborne ||= !r.target.grounded;networkEvidence.remoteWater ||= r.target.water==='skimming';networkEvidence.remoteMotion ||= Math.abs(r.target.speed)>5;}},50);
+(()=>{let b;const box=document.createElement('div');box.style='position:fixed;left:10px;top:75px;z-index:40;background:#172d31;padding:8px;font:11px Arial;max-width:260px';document.body.append(box);function button(label,fn){let a=document.createElement('button');a.textContent=label;a.disabled=true;a.style='padding:8px;margin:3px';a.onclick=fn;box.append(a)}
+function hit(speed){b=b||Isla.buildings.find(x=>x.d>7&&x.z>600);const n={x:Math.sin(b.yaw),z:Math.cos(b.yaw)},c=Isla.vehicle;Object.assign(c,{x:b.x+n.x*(b.d*.5+12),z:b.z+n.z*(b.d*.5+12),yaw:b.yaw+Math.PI,vx:-n.x*speed,vz:-n.z*speed,vy:0,steer:0,yawRate:0,grounded:true,pitch:0,roll:0});c.y=Isla.height(c.x,c.z)+.12;document.getElementById('world').focus();}
+button('Low-speed impact',()=>hit(8));button('Hard impact',()=>hit(35));button('Mountain viewpoint',()=>{let c=Isla.vehicle,p=Isla.roads[1].samples[130],q=Isla.roads[1].samples[131];Object.assign(c,{x:p.x,z:p.z,y:p.y+.15,yaw:Math.atan2(q.x-p.x,q.z-p.z),vx:0,vz:0,vy:0});document.getElementById('world').focus()});
+button('Ramp approach',()=>{const r=Isla.ramps[0],p=Isla.rampPoint(r,0,-18);Isla.resetVehicle(true);Object.assign(Isla.vehicle,{x:p.x,z:p.z,y:Isla.height(p.x,p.z)+.12,yaw:r.yaw});document.getElementById('world').focus();});
+button('Air to water to coast',()=>{let z=700;while(Isla.height(0,z)>=-.5&&z<1200)z++;Isla.resetVehicle(true);Object.assign(Isla.vehicle,{x:0,z:z+80,y:7,yaw:Math.PI,vx:0,vz:-160/3.6,grounded:true});document.getElementById('world').focus();});
+function placeCar(x,z,yaw){Isla.resetVehicle(true);Object.assign(Isla.vehicle,{x,z,y:Isla.driveHeight(x,z)+.12,yaw,lastSafe:{x,z,yaw}});document.getElementById('world').focus();}
+button('Bridge approach',()=>placeCar(Isla.bridge.start-28,-2.35,Math.PI/2));
+button('Bridge midpoint',()=>placeCar(Isla.bridge.start+170,-2.35,Math.PI/2));
+button('Santa Ruiz',()=>{const p=Isla.ruizRoad.samples[20],q=Isla.ruizRoad.samples[21];placeCar(p.x,p.z,Math.atan2(q.x-p.x,q.z-p.z));});
+button('Garage test funds',()=>{Isla.garage=Isla.createGarage();Isla.garage.credit(30000);Isla.aura.total=30000;document.getElementById('world').focus();});
+button('Hide test panel',()=>{box.style.display='none';document.getElementById('world').focus();});
+let out=document.createElement('pre');out.id='qaState';out.style='white-space:pre-wrap;font-size:9px';box.append(out);setInterval(()=>{if(window.islaDiagnostics){box.querySelectorAll('button').forEach(b=>b.disabled=false);}if(window.islaDiagnostics)out.textContent=JSON.stringify({...islaDiagnostics(),networkEvidence,remoteCars:[...(Isla.net?.remotes.values()||[])].map(r=>({car:r.car,x:r.current.x,y:r.current.y,z:r.current.z,nitro:r.target.nitro,water:r.target.water})),building:b?{hp:b.hp,collapsed:b.collapsed,name:b.name}:null},null,1)},500);
+})();

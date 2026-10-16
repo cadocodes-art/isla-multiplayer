@@ -1,0 +1,17 @@
+{
+  "name": "isla-drive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ISLA Drive — private island driving rooms for up to four friends",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test test/*.test.cjs",
+    "build:offline": "node scripts/build-offline.cjs"
+  },
+  "dependencies": {
+    "ws": "8.22.0"
+  }
+}
